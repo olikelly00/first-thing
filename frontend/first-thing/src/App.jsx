@@ -4,30 +4,36 @@ import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  
+  //const tasks = ['Task 1', 'Task 2', 'Task 3', 'Task 4']
+  const [tasks, setTasks] = useState(['Task 1', 'Task 2', 'Task 3', 'Task 4']);
+
+
+  
+  function completeTask(index) {
+    const updatedTasks = tasks.filter((task, i) => i !== index);
+    setTasks(updatedTasks)
+    console.log(updatedTasks)
+    return updatedTasks
+
+}
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1>Welcome to FirstThing</h1>
+      <h3>We're a to-do list application with a twist.</h3>
+      <h3>Add, track and tick off items as you work through them.</h3>
+      <h3>Stuck on where to start, you can prioritise your tasks with our handy AI assistant.</h3>
+
+      <h2>My list</h2>
+      <ul>
+        {tasks.map((task, index) => (
+          <>
+          <li key={index}>{task}</li> <button onClick={completeTask}>Done</button>
+          </>
+        ))}
+  
+        </ul>
     </>
   )
 }
