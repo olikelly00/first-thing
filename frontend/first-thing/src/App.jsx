@@ -1,51 +1,87 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import { useState, useEffect } from "react"
+import Button from "./components/ui/button"
+import Input from "./components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card"
 
-function App() {
-	const [tasks, setTasks] = useState([]);
-	const [taskInput, setTaskInput] = useState("");
+export default function App() {
+  const [tasks, setTasks] = useState([
+    { task: "Pay a bill", priority: "High" },
+    { task: "Do the weeks shopping", priority: "Medium" },
+    { task: "Walk the dog", priority: "Low" },
+  ])
+  const [taskInput, setTaskInput] = useState("")
 
-	function addNewTask(newTask) {
-		setTasks([newTask, ...tasks]);
-	}
+  useEffect(() => {
+    const sortTasks = async () => {
+      try {
+        const response = await fetch("https://3001.fais.al/sort-tasks", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(tasks),
+        })
 
-	function handleTextInput(e) {
-		setTaskInput(e.target.value);
-	}
+        if (!response.ok) {
+          throw new Error(`Network response was not ok (status ${response.status})`)
+        }
 
-	function completeTask(index) {
-		const updatedTasks = [...tasks.slice(0, index), ...tasks.slice(index + 1)];
-		setTasks(updatedTasks);
-		return updatedTasks;
-	}
+        const sortedTasks = await response.json()
+        setTasks(sortedTasks)
+      } catch (error) {
+        console.error("Error sorting tasks:", error)
+      }
+    }
+		sortTasks();
+  }, [tasks.length])
 
-	return (
-		<>
-			<h1>Welcome to FirstThing</h1>
-			<h3>We're a to-do list application with a twist.</h3>
-			<h3>Add, track and tick off items as you work through them.</h3>
-			<h3>Stuck on where to start? You can prioritise your tasks with our handy AI assistant.</h3>
-			<h2>My list</h2>
-			<ul>
-				{tasks.map((task, index) => (
-					<>
-						<li key={index}>{task}</li> <button onClick={() => completeTask(index)}>Done</button>
-					</>
-				))}
-			</ul>
-			<input value={taskInput} onChange={handleTextInput} type="text"></input>{" "}
-			<button
-				onClick={() => {
-					addNewTask(taskInput);
-					setTaskInput("");
-				}}
-			>
-				Add Task
-			</button>
-		</>
-	);
+  const addNewTask = () => {
+    if (taskInput.trim()) {
+      setTasks((prevTasks) => [
+        { task: taskInput, priority: "Medium" },
+        ...prevTasks,
+      ])
+      setTaskInput("")
+    }
+  }
+
+  const completeTask = (index) => {
+    setTasks((prevTasks) => prevTasks.filter((_, i) => i !== index))
+  }
+
+  return (
+    <div className=" min-h-screen flex items-center justify-center bg-black p-4">
+      <Card className="w-full max-w-2xl">
+        <CardHeader className="text-center">
+          <CardTitle>Welcome to FirstThing</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center">
+          <p className="mb-4 text-center">We're a to-do list application with a twist. Add, track and tick off items as you work through them.</p>
+          <p className="mb-6 text-center">Stuck on where to start? You can prioritise your tasks with our handy AI assistant.</p>
+          
+          <h2 className="text-2xl font-bold mb-4 text-center">My list</h2>
+          <ul className="space-y-2 w-full">
+            {tasks.map((task, index) => (
+              <li key={index} className="flex justify-between items-center bg-secondary p-2 rounded">
+                <span className="text-center flex-grow">{task.task} - {task.priority}</span>
+                <Button onClick={() => completeTask(index)} variant="outline" size="sm">
+                  Done
+                </Button>
+              </li>
+            ))}
+          </ul>
+          
+          <div className="flex mt-4 w-full">
+            <Input
+              value={taskInput}
+              onChange={(e) => setTaskInput(e.target.value)}
+              placeholder="Enter a new task"
+              className="mr-2 flex-grow"
+            />
+            <Button onClick={addNewTask}>Add Task</Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }
-
-export default App;
